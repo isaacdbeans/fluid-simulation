@@ -4,34 +4,16 @@ using UnityEngine.Serialization;
 
 public class SceneSetup3D : MonoBehaviour
 {
-    public int particleCount = 125;
-    public float particleSpacing = 1;
-    public float particleSize = 1;
-    public float borderBoxX = 40.0f;
-    public float borderBoxY = 40.0f;
-    public float borderBoxZ = 40.0f;
+    private int particleCount = 125;
+    private float particleSpacing = 1;
+    private float particleSize = 1;
+    public float borderBoxSize = 100.0f;
+    public float gravity = 0.0f;
+    public float dampingFactor = 0.7f;
     public Vector3[] positions;
     public Vector3[] velocities;
-
-    void Start()
-    {
-        positions = new Vector3[particleCount];
-        velocities = new Vector3[particleCount];
-    }
     
-    void OnDrawGizmos()
-    {
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireCube(new Vector3(0.0f, 0.0f, 0.0f), new Vector3(borderBoxX, borderBoxY, borderBoxZ));
-        Gizmos.color = Color.blue;
-
-        foreach (var position in positions)
-        {
-            Gizmos.DrawSphere(position, particleSize);
-        }
-    }
-
-    void Update()
+    void Start()
     {
         positions = new Vector3[particleCount];
         velocities = new Vector3[particleCount];
@@ -53,6 +35,44 @@ public class SceneSetup3D : MonoBehaviour
             float z = (layer - particlesPerLayer / 2f + 0.5f) * spacing;
 
             positions[i] = new Vector3(x, y, z);
+        }
+    }
+    
+    void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireCube(new Vector3(0.0f, 0.0f, 0.0f), new Vector3(borderBoxSize, borderBoxSize, borderBoxSize));
+        Gizmos.color = Color.blue;
+
+        foreach (var position in positions)
+        {
+            Gizmos.DrawSphere(position, particleSize);
+        }
+    }
+
+    void Update()
+    {
+        for (int i =0; i<particleCount; i++)
+        {
+            velocities[i] += Vector3.down * gravity;
+            positions[i] += velocities[i];
+            
+            if (Math.Abs(positions[i].x) > borderBoxSize / 2)
+            {
+                positions[i].x = (borderBoxSize / 2) * Math.Sign(positions[i].x); 
+                velocities[i].x *= -1 * dampingFactor;
+            }
+            if (Math.Abs(positions[i].y) > borderBoxSize / 2)
+            {
+                positions[i].y = (borderBoxSize / 2) * Math.Sign(positions[i].y); 
+                velocities[i].y *= -1 * dampingFactor;
+            }
+            
+            if (Math.Abs(positions[i].z) > borderBoxSize / 2)
+            {
+                positions[i].z = (borderBoxSize / 2) * Math.Sign(positions[i].z); 
+                velocities[i].z *= -1 * dampingFactor;
+            }
         }
     }
     
